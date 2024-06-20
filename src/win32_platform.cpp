@@ -3,7 +3,6 @@
 #include "game.cpp"
 /*
 - QueryPerformance Counter and RDTSC
-- Platform independent game memory
 - File I/O
 - Enfore video frame rate
 - Loading game code dynamically
@@ -25,6 +24,13 @@ internal LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, L
     case WM_DESTROY:
         Running = false;
         break;
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYDOWN:
+    case WM_SYSKEYUP:
+    {
+        Assert(!"Keyboard input came in through carzy way.");
+    } break;
     default:
         result = DefWindowProc(window, message, wParam, lParam);
         break;
@@ -103,6 +109,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
         {
             HDC deviceContext = GetDC(window);
 
+            GameInput input = {0};
             GameMemory gameMemory = {0};
             gameMemory.permenantStorageSize = Megabytes(2);
             gameMemory.transientStorageSize = Megabytes(64);
@@ -122,18 +129,43 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
             }
             while (Running)
             {
-                //MessageLoop
                 MSG msg;
                 while (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE))
                 {
-                    if (msg.message == WM_QUIT)
+                    switch(msg.message)
                     {
-                        Running = false;
+                        case WM_QUIT:
+                        {
+                            Running = false;
+                        } break;
+                        case WM_KEYDOWN:
+                        case WM_KEYUP:
+                        case WM_SYSKEYDOWN:
+                        case WM_SYSKEYUP:
+                        {
+                            uint32_t vkCode = (uint32_t)msg.wParam;
+                            bool wasDown = (msg.lParam & (1 << 30)) != 0;
+                            bool isDown = (msg.lParam & (1 << 31)) == 0;
+                            if(wasDown != isDown)
+                            {
+                                if(vkCode == 'W')
+                                {
+                                    input.Up.IsDown = isDown;
+                                }
+                                else if(vkCode == 'S')
+                                {
+                                    input.Down.IsDown = isDown;
+                                }
+                            }
+                        } break;
+                        default:
+                        {
+                            TranslateMessage(&msg);
+                            DispatchMessageA(&msg);
+                        } break;
                     }
-                    TranslateMessage(&msg);
-                    DispatchMessageA(&msg);
                 }
-                GameUpdateAndRender(&gameMemory);
+                GameUpdateAndRender(&gameMemory, &input, 800, 600);
                 SwapBuffers(deviceContext);
             }
         }

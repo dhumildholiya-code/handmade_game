@@ -1,5 +1,19 @@
 #include "game.h"
 
+const char *vertex_shader =
+    "#version 400\n"
+    "uniform mat4 proj;\n"
+    "in vec3 vp;\n"
+    "void main() {\n"
+    "  gl_Position = proj * vec4(vp, 1.0);\n"
+    "}";
+const char *fragment_shader =
+    "#version 400\n"
+    "out vec4 color;\n"
+    "void main() {\n"
+    "  color = vec4(1.0, 1.0, 1.0, 1.0);\n"
+    "}";
+
 internal void CreateOrthoProj(Matrix4X4 *mat, real32 l, real32 r, real32 t, real32 b,
                                    real32 n, real32 f)
 {
@@ -16,59 +30,6 @@ internal void CreateOrthoProj(Matrix4X4 *mat, real32 l, real32 r, real32 t, real
     mat->data[13] = (t + b) * -itb;
     mat->data[14] = (f + n) * -ifn;
     mat->data[15] = 1.0f;
-}
-
-const char *vertex_shader =
-    "#version 400\n"
-    "uniform mat4 proj;\n"
-    "in vec3 vp;\n"
-    "void main() {\n"
-    "  gl_Position = proj * vec4(vp, 1.0);\n"
-    "}";
-const char *fragment_shader =
-    "#version 400\n"
-    "out vec4 color;\n"
-    "void main() {\n"
-    "  color = vec4(1.0, 1.0, 1.0, 1.0);\n"
-    "}";
-
-internal void GameUpdateAndRender(GameMemory *memory)
-{
-    GameState *gameState = (GameState *)memory->permenantStorage;
-    if(!memory->initialized)
-    {
-        gameState->vertexId = 0;
-        gameState->indexId = 0;
-        CreateOrthoProj(&gameState->orthoProj, 0.0f, 800.0f, 0.0f, 600.0f,
-                        0.0f, 10.0f);
-        CreateAndCompileShader(&gameState->basicShader, vertex_shader, fragment_shader);
-        glGenBuffers(1, &gameState->vbo);
-        glGenBuffers(1, &gameState->ibo);
-        glGenVertexArrays(1, &gameState->vao);
-        glBindVertexArray(gameState->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, gameState->vbo);
-        glBufferData(GL_ARRAY_BUFFER, 24*3* sizeof(real32), 0, GL_DYNAMIC_DRAW);
-        // glBufferData(GL_ARRAY_BUFFER, 4*3*sizeof(real32), vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gameState->ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12*3*sizeof(uint32_t), 0, GL_DYNAMIC_DRAW);
-        // glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(uint32_t), indices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        memory->initialized = true;
-    }
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(gameState->basicShader.program);
-    DrawRectangle(gameState, 100.0f, 100.0f, 100.0f, 100.0f);
-    DrawRectangle(gameState, 200.0f, 100.0f, 100.0f, 100.0f);
-    DrawRectangle(gameState, 300.0f, 100.0f, 100.0f, 100.0f);
-    DrawRectangle(gameState, 400.0f, 100.0f, 100.0f, 100.0f);
-    DrawRectangle(gameState, 500.0f, 100.0f, 100.0f, 100.0f);
-    Flush(gameState);
 }
 
 internal void DrawRectangle(GameState *gameState, real32 x, real32 y, real32 w, real32 h)
@@ -117,4 +78,57 @@ internal void Flush(GameState *gameState)
 
     gameState->vertexId = 0;
     gameState->indexId = 0;
+}
+
+internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
+                                uint32_t width, uint32_t height)
+{
+    GameState *gameState = (GameState *)memory->permenantStorage;
+    if(!memory->initialized)
+    {
+        gameState->playerX = 20.0f;
+        gameState->playerY = height * 0.5f - 50.0f;
+        gameState->vertexId = 0;
+        gameState->indexId = 0;
+        CreateOrthoProj(&gameState->orthoProj, 0.0f, 800.0f, 0.0f, 600.0f,
+                        0.0f, 10.0f);
+        CreateAndCompileShader(&gameState->basicShader, vertex_shader, fragment_shader);
+        glGenBuffers(1, &gameState->vbo);
+        glGenBuffers(1, &gameState->ibo);
+        glGenVertexArrays(1, &gameState->vao);
+        glBindVertexArray(gameState->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, gameState->vbo);
+        glBufferData(GL_ARRAY_BUFFER, 24*3* sizeof(real32), 0, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gameState->ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12*3*sizeof(uint32_t), 0, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        memory->initialized = true;
+    }
+
+    if(input->Up.IsDown)
+    {
+        gameState->playerY -= 0.05f;
+    }
+    if(input->Down.IsDown)
+    {
+        gameState->playerY += 0.05f;
+    }
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(gameState->basicShader.program);
+    real32 x = 0.0f;
+    real32 y = 0.0f;
+    DrawRectangle(gameState, gameState->playerX, gameState->playerY, 20.0f, 100.0f);
+    x = width - gameState->playerX - 20.0f;
+    y = height - gameState->playerY - 100.0f;
+    DrawRectangle(gameState, x, y, 20.0f, 100.0f);
+    x = width * 0.5f - 7.0f;
+    y = height * 0.5f - 7.0f;
+    DrawRectangle(gameState, x, y, 14.0f, 14.0f);
+    Flush(gameState);
 }

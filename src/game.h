@@ -20,7 +20,7 @@
 typedef float real32;
 typedef double real64;
 
-// NOTE : Service Provided By Platfrom to Game.
+// NOTE: Service Provided By Platfrom to Game.
 struct Shader
 {
     uint32_t vs;
@@ -39,16 +39,28 @@ struct GameMemory
     void *transientStorage;
 };
 
-// NOTE : Service Provided By Game To Platform.
-internal void GameUpdateAndRender(GameMemory *memory);
+// NOTE: Service Provided By Game To Platform.
+struct ButtonState
+{
+    bool IsDown;
+};
+struct GameInput
+{
+    ButtonState Up;
+    ButtonState Down;
+};
+internal void GameUpdateAndRender(GameMemory *memory, GameInput *input, uint32_t width, uint32_t height);
 
 // NOTE : These is not Service To Platfrom from game.
 struct Matrix4X4
 {
     real32 data[16];
 };
+
 struct GameState
 {
+    real32 playerX;
+    real32 playerY;
     Matrix4X4 orthoProj;
     Shader basicShader;
     uint32_t vertexId;
@@ -57,7 +69,3 @@ struct GameState
     uint32_t vbo;
     uint32_t vao;
 };
-internal void CreateOrthoProj(Matrix4X4 *mat, real32 l, real32 r, real32 t, real32 b,
-                                   real32 n, real32 f);
-internal void DrawRectangle(GameState *gameState, real32 x, real32 y, real32 w, real32 h);
-internal void Flush(GameState *gameState);
