@@ -14,6 +14,13 @@ const char *fragment_shader =
     "  color = vec4(1.0, 1.0, 1.0, 1.0);\n"
     "}";
 
+inline internal real32 Sign(real32 x)
+{
+    if(x > 0.0f) return 1.0f;
+    else if(x == 0.0f) return 0.0f;
+    else return -1.0f;
+}
+
 internal void CreateOrthoProj(Matrix4X4 *mat, real32 l, real32 r, real32 t, real32 b,
                                    real32 n, real32 f)
 {
@@ -86,8 +93,10 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
     RenderState *renderer = (RenderState *)((uint8_t *)gameState + sizeof(GameState));
     if(!memory->Initialized)
     {
-        gameState->PlayerX = 20.0f;
-        gameState->PlayerY = height * 0.5f - 50.0f;
+        gameState->PlayerX[0] = 20.0f;
+        gameState->PlayerY[0] = height * 0.5f - 50.0f;
+        gameState->PlayerX[1] = width - gameState->PlayerX[0] - 20.0f;
+        gameState->PlayerY[1] = height - gameState->PlayerY[0] - 100.0f;
         gameState->BallX = width * 0.5f - 7.0f;
         gameState->BallY = height * 0.5f - 7.0f;
         gameState->BallVelX = 0.05f;
@@ -117,11 +126,13 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
 
     if(input->Up.IsDown)
     {
-        gameState->PlayerY -= 0.05f;
+        gameState->PlayerY[0] -= 0.05f;
+        gameState->PlayerY[1] += 0.05f;
     }
     if(input->Down.IsDown)
     {
-        gameState->PlayerY += 0.05f;
+        gameState->PlayerY[0] += 0.05f;
+        gameState->PlayerY[1] -= 0.05f;
     }
     gameState->BallX += gameState->BallVelX;
     gameState->BallY += gameState->BallVelY;
@@ -145,13 +156,33 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
         gameState->BallY = height;
         gameState->BallVelY *= -1.0f;
     }
+    for(size_t i=0; i<2; ++i)
+    {
+        real32 dx = (gameState->BallX + 7.0f) - (gameState->PlayerX[i] + 10.0f);
+        real32 dy = (gameState->BallY + 7.0f) - (gameState->PlayerY[i] + 50.0f);
+        real32 ox = 17.0f - fabsf(dx);
+        real32 oy = 57.0f - fabsf(dy);
+        if(ox > 0.0f && oy > 0.0f)
+        {
+            if(ox < oy)
+            {
+                gameState->BallX += Sign(dx) * ox;
+                gameState->BallVelX *= -1.0f;
+            }
+            else
+            {
+                gameState->BallY += Sign(dy) * oy;
+                gameState->BallVelY *= -1.0f;
+            }
+        }
+    }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(renderer->BasicShader.Program);
-    DrawRectangle(renderer, gameState->PlayerX, gameState->PlayerY, 20.0f, 100.0f);
-    real32 x = width - gameState->PlayerX - 20.0f;
-    real32 y = height - gameState->PlayerY - 100.0f;
-    DrawRectangle(renderer, x, y, 20.0f, 100.0f);
+    for(size_t i=0; i<2; ++i)
+    {
+        DrawRectangle(renderer, gameState->PlayerX[i], gameState->PlayerY[i], 20.0f, 100.0f);
+    }
     DrawRectangle(renderer, gameState->BallX, gameState->BallY, 14.0f, 14.0f);
     Flush(renderer);
 }

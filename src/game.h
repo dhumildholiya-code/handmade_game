@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <math.h>
 
 #define internal static
 #define local_persist static
@@ -59,8 +60,8 @@ struct Matrix4X4
 
 struct GameState
 {
-    real32 PlayerX;
-    real32 PlayerY;
+    real32 PlayerX[2];
+    real32 PlayerY[2];
     real32 BallX;
     real32 BallY;
     real32 BallVelX;
