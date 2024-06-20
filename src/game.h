@@ -23,20 +23,20 @@ typedef double real64;
 // NOTE: Service Provided By Platfrom to Game.
 struct Shader
 {
-    uint32_t vs;
-    uint32_t fs;
-    uint32_t program;
+    uint32_t Vs;
+    uint32_t Fs;
+    uint32_t Program;
 };
 internal void CreateAndCompileShader(Shader *shader, const char* vertexShader,
                                     const char* fragShader);
 
 struct GameMemory
 {
-    bool initialized;
-    uint64_t permenantStorageSize;
-    void *permenantStorage;
-    uint64_t transientStorageSize;
-    void *transientStorage;
+    bool Initialized;
+    uint64_t PermenantStorageSize;
+    void *PermenantStorage;
+    uint64_t TransientStorageSize;
+    void *TransientStorage;
 };
 
 // NOTE: Service Provided By Game To Platform.
@@ -51,21 +51,29 @@ struct GameInput
 };
 internal void GameUpdateAndRender(GameMemory *memory, GameInput *input, uint32_t width, uint32_t height);
 
-// NOTE : These is not Service To Platfrom from game.
+// NOTE: Game Stuff.
 struct Matrix4X4
 {
-    real32 data[16];
+    real32 Data[16];
 };
 
 struct GameState
 {
-    real32 playerX;
-    real32 playerY;
-    Matrix4X4 orthoProj;
-    Shader basicShader;
-    uint32_t vertexId;
-    uint32_t indexId;
-    uint32_t ibo;
-    uint32_t vbo;
-    uint32_t vao;
+    real32 PlayerX;
+    real32 PlayerY;
+    real32 BallX;
+    real32 BallY;
+    real32 BallVelX;
+    real32 BallVelY;
+};
+
+struct RenderState
+{
+    Matrix4X4 OrthoProj;
+    Shader BasicShader;
+    uint32_t VertexId;
+    uint32_t IndexId;
+    uint32_t Ibo;
+    uint32_t Vbo;
+    uint32_t Vao;
 };

@@ -76,16 +76,16 @@ internal bool CreateGlContext(HDC deviceContext)
 internal void CreateAndCompileShader(Shader *shader,
                                      const char *vertexShader, const char *fragShader)
 {
-    shader->vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(shader->vs, 1, &vertexShader, 0);
-    glCompileShader(shader->vs);
-    shader->fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(shader->fs, 1, &fragShader, 0);
-    glCompileShader(shader->fs);
-    shader->program = glCreateProgram();
-    glAttachShader(shader->program, shader->vs);
-    glAttachShader(shader->program, shader->fs);
-    glLinkProgram(shader->program);
+    shader->Vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(shader->Vs, 1, &vertexShader, 0);
+    glCompileShader(shader->Vs);
+    shader->Fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(shader->Fs, 1, &fragShader, 0);
+    glCompileShader(shader->Fs);
+    shader->Program = glCreateProgram();
+    glAttachShader(shader->Program, shader->Vs);
+    glAttachShader(shader->Program, shader->Fs);
+    glLinkProgram(shader->Program);
 }
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
@@ -111,13 +111,13 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
 
             GameInput input = {0};
             GameMemory gameMemory = {0};
-            gameMemory.permenantStorageSize = Megabytes(2);
-            gameMemory.transientStorageSize = Megabytes(64);
-            uint64_t totalSize = gameMemory.permenantStorageSize + gameMemory.transientStorageSize;
-            gameMemory.permenantStorage = VirtualAlloc(0, totalSize, MEM_RESERVE|MEM_COMMIT,
+            gameMemory.PermenantStorageSize = Megabytes(2);
+            gameMemory.TransientStorageSize = Megabytes(64);
+            uint64_t totalSize = gameMemory.PermenantStorageSize + gameMemory.TransientStorageSize;
+            gameMemory.PermenantStorage = VirtualAlloc(0, totalSize, MEM_RESERVE|MEM_COMMIT,
                                                     PAGE_READWRITE);
-            gameMemory.transientStorage = (uint8_t *)gameMemory.permenantStorage
-                                        + gameMemory.permenantStorageSize;
+            gameMemory.TransientStorage = (uint8_t *)gameMemory.PermenantStorage
+                                        + gameMemory.PermenantStorageSize;
 
             if (CreateGlContext(deviceContext))
             {
