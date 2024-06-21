@@ -2,11 +2,10 @@
 #include "GL/glew.h"
 #include "game.cpp"
 
-/*
-- QueryPerformance Counter and RDTSC
+/* TODO:
 - File I/O
-- Enfore video frame rate
-- asset loading (wav, png, ttf)
+- Pass DeltaTime to Game From Platform
+- Asset loading (wav, png, ttf)
 - Setup XAudio2
 */
 #include <windows.h>
@@ -14,6 +13,7 @@
 
 global_var bool Running;
 global_var HGLRC GlContext;
+global_var int64_t PerfFreq;
 
 internal LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -90,6 +90,19 @@ internal void CreateAndCompileShader(Shader *shader,
     glLinkProgram(shader->Program);
 }
 
+inline internal LARGE_INTEGER Win32GetWallClock()
+{
+    LARGE_INTEGER result;
+    QueryPerformanceCounter(&result);
+    return result;
+}
+
+inline internal real32 Win32ElapsedSecond(LARGE_INTEGER start, LARGE_INTEGER end)
+{
+    int64_t counterElapsed = end.QuadPart - start.QuadPart;
+    return (real32)counterElapsed / (real32)PerfFreq;
+}
+
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
                    PSTR cmdLine, int cmdShow)
 {
@@ -102,7 +115,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
 
     LARGE_INTEGER perfFreqResult;
     QueryPerformanceFrequency(&perfFreqResult);
-    int64_t perfFreq = perfFreqResult.QuadPart;
+    PerfFreq = perfFreqResult.QuadPart;
+    int targetFps = 60;
+    real32 targetElapsedTime = 1.0f / (real32)targetFps;
 
     if (RegisterClassExA(&windowClass))
     {
@@ -134,9 +149,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
             {
                 // TODO : OpenGl Init failed
             }
-            LARGE_INTEGER lastCounter;
-            QueryPerformanceCounter(&lastCounter);
             int64_t lastCycleCount = __rdtsc();
+            LARGE_INTEGER lastCounter = Win32GetWallClock();
             while (Running)
             {
                 MSG msg;
@@ -176,23 +190,28 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
                     }
                 }
                 GameUpdateAndRender(&gameMemory, &input, 800, 600);
+
+                LARGE_INTEGER endCounter = Win32GetWallClock();
+                lastCounter = endCounter;
+                real32 elapsedTime = Win32ElapsedSecond(lastCounter, endCounter);
+                while(elapsedTime < targetElapsedTime)
+                {
+                    endCounter = Win32GetWallClock();
+                    elapsedTime = Win32ElapsedSecond(lastCounter, endCounter);
+                }
                 SwapBuffers(deviceContext);
 
-                int64_t endCycleCount = __rdtsc();
-                LARGE_INTEGER endCounter;
-                QueryPerformanceCounter(&endCounter);
-
-                int64_t cyclesElapsed = endCycleCount - lastCycleCount;
-                int64_t counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
-                real32 msPerFrame = (real32)((1000.0f * counterElapsed) / perfFreq);
-                real32 fps = (real32)perfFreq / (real32)counterElapsed;
-                real32 mCPerFrame = (real32)cyclesElapsed / (1000.0f * 1000.0f);
+                // int64_t counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
+                real32 msPerFrame = elapsedTime * 1000.0f;
+                real32 fps = 1.0f / elapsedTime;;
 
                 char buffer[256];
-                sprintf(buffer, "%f ms/f, %f f/s, %f mc/s\n", msPerFrame, fps, mCPerFrame);
+                sprintf(buffer, "%f ms/f, %f f/s\n", msPerFrame, fps);
                 OutputDebugStringA(buffer);
 
-                lastCounter = endCounter;
+                int64_t endCycleCount = __rdtsc();
+                int64_t cyclesElapsed = endCycleCount - lastCycleCount;
+                real32 mCPerFrame = (real32)cyclesElapsed / (1000.0f * 1000.0f);
                 lastCycleCount = endCycleCount;
             }
         }

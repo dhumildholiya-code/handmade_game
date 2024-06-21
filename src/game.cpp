@@ -99,8 +99,8 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
         gameState->PlayerY[1] = height - gameState->PlayerY[0] - 100.0f;
         gameState->BallX = width * 0.5f - 7.0f;
         gameState->BallY = height * 0.5f - 7.0f;
-        gameState->BallVelX = 0.05f;
-        gameState->BallVelY = 0.05f;
+        gameState->BallVelX = 2.5f;
+        gameState->BallVelY = 2.5f;
 
         renderer->VertexId = 0;
         renderer->IndexId = 0;
@@ -126,13 +126,13 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
 
     if(input->Up.IsDown)
     {
-        gameState->PlayerY[0] -= 0.05f;
-        gameState->PlayerY[1] += 0.05f;
+        gameState->PlayerY[0] -= 5.0f;
+        gameState->PlayerY[1] += 5.0f;
     }
     if(input->Down.IsDown)
     {
-        gameState->PlayerY[0] += 0.05f;
-        gameState->PlayerY[1] -= 0.05f;
+        gameState->PlayerY[0] += 5.0f;
+        gameState->PlayerY[1] -= 5.0f;
     }
     gameState->BallX += gameState->BallVelX;
     gameState->BallY += gameState->BallVelY;
@@ -146,14 +146,14 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
         gameState->BallY = 0.0f;
         gameState->BallVelY *= -1.0f;
     }
-    if(gameState->BallX > width)
+    if(gameState->BallX + 14.0f > width)
     {
-        gameState->BallX = width;
+        gameState->BallX = width - 14.0f;
         gameState->BallVelX *= -1.0f;
     }
-    if(gameState->BallY > height)
+    if(gameState->BallY + 14.0f > height)
     {
-        gameState->BallY = height;
+        gameState->BallY = height - 14.0f;
         gameState->BallVelY *= -1.0f;
     }
     for(size_t i=0; i<2; ++i)
