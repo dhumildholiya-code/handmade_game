@@ -1,14 +1,16 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 #include "game.cpp"
+
 /*
 - QueryPerformance Counter and RDTSC
 - File I/O
 - Enfore video frame rate
-- Loading game code dynamically
+- asset loading (wav, png, ttf)
+- Setup XAudio2
 */
-
 #include <windows.h>
+#include <stdio.h>
 
 global_var bool Running;
 global_var HGLRC GlContext;
@@ -38,7 +40,7 @@ internal LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, L
     return result;
 }
 
-internal bool CreateGlContext(HDC deviceContext)
+internal bool Win32InitOpengl(HDC deviceContext)
 {
     PIXELFORMATDESCRIPTOR pfd = {0};
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
@@ -97,6 +99,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
     windowClass.lpfnWndProc = WindowProc;
     windowClass.hInstance = instance;
     windowClass.lpszClassName = "PongGameClass";
+
+    LARGE_INTEGER perfFreqResult;
+    QueryPerformanceFrequency(&perfFreqResult);
+    int64_t perfFreq = perfFreqResult.QuadPart;
+
     if (RegisterClassExA(&windowClass))
     {
         HWND window = CreateWindowExA(0, windowClass.lpszClassName,
@@ -119,14 +126,17 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
             gameMemory.TransientStorage = (uint8_t *)gameMemory.PermenantStorage
                                         + gameMemory.PermenantStorageSize;
 
-            if (CreateGlContext(deviceContext))
+            if (Win32InitOpengl(deviceContext))
             {
                 Running = true;
             }
             else
             {
-                // TODO : Logging
+                // TODO : OpenGl Init failed
             }
+            LARGE_INTEGER lastCounter;
+            QueryPerformanceCounter(&lastCounter);
+            int64_t lastCycleCount = __rdtsc();
             while (Running)
             {
                 MSG msg;
@@ -167,16 +177,33 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
                 }
                 GameUpdateAndRender(&gameMemory, &input, 800, 600);
                 SwapBuffers(deviceContext);
+
+                int64_t endCycleCount = __rdtsc();
+                LARGE_INTEGER endCounter;
+                QueryPerformanceCounter(&endCounter);
+
+                int64_t cyclesElapsed = endCycleCount - lastCycleCount;
+                int64_t counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
+                real32 msPerFrame = (real32)((1000.0f * counterElapsed) / perfFreq);
+                real32 fps = (real32)perfFreq / (real32)counterElapsed;
+                real32 mCPerFrame = (real32)cyclesElapsed / (1000.0f * 1000.0f);
+
+                char buffer[256];
+                sprintf(buffer, "%f ms/f, %f f/s, %f mc/s\n", msPerFrame, fps, mCPerFrame);
+                OutputDebugStringA(buffer);
+
+                lastCounter = endCounter;
+                lastCycleCount = endCycleCount;
             }
         }
         else
         {
-            // TODO : Logging
+            // TODO : Winodw creation failed.
         }
     }
     else
     {
-        // TODO : Logging
+        // TODO : Register window failedd.
     }
     return 0;
 }
