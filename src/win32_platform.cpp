@@ -64,7 +64,11 @@ internal void Win32InitXAudio2()
         xaudio2_create *XAudio2Create = (xaudio2_create *)GetProcAddress(xAudio2Lib, "XAudio2Create");
         if(XAudio2Create && SUCCEEDED(XAudio2Create(&XAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
         {
-            int a = 5;
+            IXAudio2MasteringVoice* pMasterVoice = nullptr;
+            if (SUCCEEDED(XAudio2->CreateMasteringVoice(&pMasterVoice)))
+            {
+                int a = 5;
+            }
         }
         else
         {
