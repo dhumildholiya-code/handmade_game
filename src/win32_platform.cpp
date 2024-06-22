@@ -10,35 +10,12 @@
 */
 #include <windows.h>
 #include <stdio.h>
+#include <xaudio2.h>
 
 global_var bool Running;
 global_var HGLRC GlContext;
+global_var IXAudio2 *XAudio2;
 global_var int64_t PerfFreq;
-
-internal LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    LRESULT result = 0;
-    switch (message)
-    {
-    case WM_CLOSE:
-        Running = false;
-        break;
-    case WM_DESTROY:
-        Running = false;
-        break;
-    case WM_KEYDOWN:
-    case WM_KEYUP:
-    case WM_SYSKEYDOWN:
-    case WM_SYSKEYUP:
-    {
-        Assert(!"Keyboard input came in through carzy way.");
-    } break;
-    default:
-        result = DefWindowProc(window, message, wParam, lParam);
-        break;
-    }
-    return result;
-}
 
 internal bool Win32InitOpengl(HDC deviceContext)
 {
@@ -75,6 +52,27 @@ internal bool Win32InitOpengl(HDC deviceContext)
         return false;
     }
 }
+
+#define XAUDIO2_CREATE(name) HRESULT name(IXAudio2 **ppXAudio2, UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor)
+typedef XAUDIO2_CREATE(xaudio2_create);
+
+internal void Win32InitXAudio2()
+{
+    HMODULE xAudio2Lib = LoadLibraryA("xaudio2_9.dll");
+    if(xAudio2Lib)
+    {
+        xaudio2_create *XAudio2Create = (xaudio2_create *)GetProcAddress(xAudio2Lib, "XAudio2Create");
+        if(XAudio2Create && SUCCEEDED(XAudio2Create(&XAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+        {
+            int a = 5;
+        }
+        else
+        {
+            //TODO: Failed to Create XAudio2.
+        }
+    }
+}
+
 internal void CreateAndCompileShader(Shader *shader,
                                      const char *vertexShader, const char *fragShader)
 {
@@ -101,6 +99,31 @@ inline internal real32 Win32ElapsedSecond(LARGE_INTEGER start, LARGE_INTEGER end
 {
     int64_t counterElapsed = end.QuadPart - start.QuadPart;
     return (real32)counterElapsed / (real32)PerfFreq;
+}
+
+internal LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT result = 0;
+    switch (message)
+    {
+    case WM_CLOSE:
+        Running = false;
+        break;
+    case WM_DESTROY:
+        Running = false;
+        break;
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYDOWN:
+    case WM_SYSKEYUP:
+    {
+        Assert(!"Keyboard input came in through carzy way.");
+    } break;
+    default:
+        result = DefWindowProc(window, message, wParam, lParam);
+        break;
+    }
+    return result;
 }
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
@@ -130,6 +153,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
         if (window)
         {
             HDC deviceContext = GetDC(window);
+            Win32InitXAudio2();
 
             GameInput input = {0};
             GameMemory gameMemory = {0};
