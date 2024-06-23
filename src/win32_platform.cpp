@@ -92,6 +92,85 @@ internal void CreateAndCompileShader(Shader *shader,
     glLinkProgram(shader->Program);
 }
 
+internal FileResult PlatformReadWholeFile(char* filename)
+{
+    FileResult result = {};
+    
+    HANDLE file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, 0,
+                            OPEN_EXISTING, 0,0);
+    if(file != INVALID_HANDLE_VALUE)
+    {
+        LARGE_INTEGER fileSize;
+        if(GetFileSizeEx(file, &fileSize))
+        {
+            Assert(fileSize.QuadPart <= 0xFFFFFFFF);
+            result.ContentSize = (uint32_t)fileSize.QuadPart;
+            result.Content = VirtualAlloc(0, result.ContentSize, MEM_RESERVE|MEM_COMMIT,
+                                                        PAGE_READWRITE);
+            if(result.Content)
+            {
+                DWORD bytesToRead;
+                if(ReadFile(file, result.Content, result.ContentSize, &bytesToRead, 0)
+                    && bytesToRead == result.ContentSize)
+                {
+                }
+                else
+                {
+                    PlatformFreeFileMemory(result.Content);
+                }
+            }        
+            else
+            {
+                //LOG: FileMemory allocation failed.
+            }                                            
+        }
+        else
+        {
+            //LOG: GetFileSize failed.
+        }
+        CloseHandle(file);
+    }
+    else
+    {
+        //LOG: Creating file failed.
+    }
+    
+    return result;
+}
+
+internal void PlatformFreeFileMemory(void *memory)
+{
+    if(memory)
+    {
+        VirtualFree(memory, 0, MEM_RELEASE);
+    }
+}
+
+internal bool PlatformWriteWholeFile(char *filename, uint32_t memorySize, void *memory)
+{
+    bool result = false;
+    HANDLE file = CreateFileA(filename, GENERIC_WRITE, 0, 0, CREATE_NEW, 0, 0);
+    if(file != INVALID_HANDLE_VALUE)
+    {
+        DWORD bytesWritten;
+        if(WriteFile(file, memory, memorySize, &bytesWritten, 0)
+            && memorySize == bytesWritten)
+        {
+            result = true;
+        }
+        else
+        {
+            //LOG: Not able to write file entirely.
+        }
+        CloseHandle(file);
+    }
+    else
+    {
+        //LOG: Creating file failed.
+    }
+    return result;
+}
+
 inline internal LARGE_INTEGER Win32GetWallClock()
 {
     LARGE_INTEGER result;
@@ -229,9 +308,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
                 }
                 SwapBuffers(deviceContext);
 
-                // int64_t counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
                 real32 msPerFrame = elapsedTime * 1000.0f;
-                real32 fps = 1.0f / elapsedTime;;
+                real32 fps = 1.0f / elapsedTime;
 
                 char buffer[256];
                 sprintf(buffer, "%f ms/f, %f f/s\n", msPerFrame, fps);

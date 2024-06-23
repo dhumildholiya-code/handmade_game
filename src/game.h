@@ -1,7 +1,3 @@
-/* TODO:
-- Font Rendering
-*/
-
 #include <cstdint>
 #include <math.h>
 
@@ -34,6 +30,18 @@ struct Shader
 };
 internal void CreateAndCompileShader(Shader *shader, const char* vertexShader,
                                     const char* fragShader);
+struct FileResult
+{
+    uint32_t ContentSize;
+    void *Content;
+};                       
+/*
+NOTE: This is Debug File I/O.
+This Allocates memory other than GameMemory.
+*/
+internal FileResult PlatformReadWholeFile(char* filename);
+internal void PlatformFreeFileMemory(void *memory);
+internal bool PlatformWriteWholeFile(char *filename, uint32_t memorySize, void *memory);
 
 struct GameMemory
 {
