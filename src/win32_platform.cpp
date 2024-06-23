@@ -95,7 +95,7 @@ internal void CreateAndCompileShader(Shader *shader,
 internal FileResult PlatformReadWholeFile(char* filename)
 {
     FileResult result = {};
-    
+
     HANDLE file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, 0,
                             OPEN_EXISTING, 0,0);
     if(file != INVALID_HANDLE_VALUE)
@@ -118,11 +118,11 @@ internal FileResult PlatformReadWholeFile(char* filename)
                 {
                     PlatformFreeFileMemory(result.Content);
                 }
-            }        
+            }
             else
             {
                 //LOG: FileMemory allocation failed.
-            }                                            
+            }
         }
         else
         {
@@ -134,7 +134,7 @@ internal FileResult PlatformReadWholeFile(char* filename)
     {
         //LOG: Creating file failed.
     }
-    
+
     return result;
 }
 
