@@ -80,7 +80,7 @@ struct WaveHeader
 #define RIFF_CODE(a, b, c, d) (((uint32_t)(a)<<0) | ((uint32_t)(b)<<8) | ((uint32_t)(c)<<16)| ((uint32_t)(d)<<24))
 enum
 {
-    WAVE_RIFF = RIFF_CODE('R', 'I', 'I', 'F'),
+    WAVE_RIFF = RIFF_CODE('R', 'I', 'F', 'F'),
     WAVE_FMT = RIFF_CODE('f', 'm', 't', ' '),
     WAVE_WAVE = RIFF_CODE('W', 'A', 'V', 'E'),
     WAVE_DATA = RIFF_CODE('d', 'a', 't', 'a'),

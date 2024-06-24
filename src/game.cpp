@@ -46,9 +46,20 @@ internal SoundClip LoadWaveFile(char *filename)
     FileResult fileResult = PlatformReadWholeFile(filename);
     if(fileResult.ContentSize != 0)
     {
-        WaveHeader *header = (WaveHeader *)fileResult.Content;
+        uint8_t *at = (uint8_t *)fileResult.Content;
+        WaveHeader *header = (WaveHeader *)at;
         Assert(header->RiffId == WAVE_RIFF);
         Assert(header->WaveId == WAVE_WAVE);
+        at += sizeof(WaveHeader);
+        WaveChunk *chunk = (WaveChunk *)at;
+        if(chunk->Id == WAVE_FMT)
+        {
+            at += sizeof(WaveChunk);
+            WaveFmt *fmt = (WaveFmt *)at;
+            at += chunk->Size;
+        }
+        chunk = (WaveChunk *)at;
+        int a = 0;
     }
 
    return result;
