@@ -110,7 +110,7 @@ struct SoundClip
     uint32_t SampleCount;
     void *Memory;
 };
-internal SoundClip LoadWavFile(char *filename);
+internal SoundClip LoadWaveFile(char *filename);
 
 struct GameState
 {
