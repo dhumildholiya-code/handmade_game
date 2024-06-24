@@ -34,7 +34,7 @@ struct FileResult
 {
     uint32_t ContentSize;
     void *Content;
-};                       
+};
 /*
 NOTE: This is Debug File I/O.
 This Allocates memory other than GameMemory.
@@ -69,6 +69,48 @@ struct Matrix4X4
 {
     real32 Data[16];
 };
+
+#pragma pack(push, 1)
+struct WaveHeader
+{
+    uint32_t RiffId;
+    uint32_t Size;
+    uint32_t WaveId;
+};
+#define RIFF_CODE(a, b, c, d) (((uint32_t)(a)<<0) | ((uint32_t)(b)<<8) | ((uint32_t)(c)<<16)| ((uint32_t)(d)<<24))
+enum
+{
+    WAVE_RIFF = RIFF_CODE('R', 'I', 'I', 'F'),
+    WAVE_FMT = RIFF_CODE('f', 'm', 't', ' '),
+    WAVE_WAVE = RIFF_CODE('W', 'A', 'V', 'E'),
+    WAVE_DATA = RIFF_CODE('d', 'a', 't', 'a'),
+};
+struct WaveChunk
+{
+    uint32_t Id;
+    uint32_t Size;
+};
+struct WaveFmt
+{
+    uint16_t wFormatTag;
+    uint16_t nChannels;
+    uint32_t nSamplesPerSec;
+    uint32_t nAvgBytesPerSec;
+    uint16_t nBlockAlign;
+    uint16_t wBitsPerSample;
+    uint16_t cbSize;
+    uint16_t wValidBitsPerSample;
+    uint32_t dwChannelMask;
+    uint8_t SubFormat[16];
+};
+#pragma pack(pop)
+
+struct SoundClip
+{
+    uint32_t SampleCount;
+    void *Memory;
+};
+internal SoundClip LoadWavFile(char *filename);
 
 struct GameState
 {

@@ -39,6 +39,21 @@ internal void CreateOrthoProj(Matrix4X4 *mat, real32 l, real32 r, real32 t, real
     mat->Data[15] = 1.0f;
 }
 
+internal SoundClip LoadWaveFile(char *filename)
+{
+    SoundClip result = {};
+
+    FileResult fileResult = PlatformReadWholeFile(filename);
+    if(fileResult.ContentSize != 0)
+    {
+        WaveHeader *header = (WaveHeader *)fileResult.Content;
+        Assert(header->RiffId == WAVE_RIFF);
+        Assert(header->WaveId == WAVE_WAVE);
+    }
+
+   return result;
+}
+
 internal void DrawRectangle(RenderState *renderer, real32 x, real32 y, real32 w, real32 h)
 {
     uint32_t vertexCount = 4;
@@ -93,6 +108,8 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
     RenderState *renderer = (RenderState *)((uint8_t *)gameState + sizeof(GameState));
     if(!memory->Initialized)
     {
+        SoundClip clip = LoadWaveFile("test.wav");
+
         gameState->PlayerX[0] = 20.0f;
         gameState->PlayerY[0] = height * 0.5f - 50.0f;
         gameState->PlayerX[1] = width - gameState->PlayerX[0] - 20.0f;
