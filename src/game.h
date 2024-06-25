@@ -24,25 +24,25 @@ typedef double real64;
 // NOTE: Service Provided By Platfrom to Game.
 struct Shader
 {
-    uint32_t Vs;
-    uint32_t Fs;
-    uint32_t Program;
+    uint32_t vs;
+    uint32_t fs;
+    uint32_t program;
 };
 internal void CreateAndCompileShader(Shader *shader, const char* vertexShader,
                                     const char* fragShader);
 
 struct SoundClip
 {
-    uint32_t SampleCount;
-    uint32_t Size;
-    void *Memory;
+    uint32_t sampleCount;
+    uint32_t size;
+    void *memory;
 };
 internal void PlayAudio(SoundClip clip);
 
 struct FileResult
 {
-    uint32_t ContentSize;
-    void *Content;
+    uint32_t contentSize;
+    void *content;
 };
 /*
 NOTE: This is Debug File I/O.
@@ -54,22 +54,22 @@ internal bool PlatformWriteWholeFile(char *filename, uint32_t memorySize, void *
 
 struct GameMemory
 {
-    bool Initialized;
-    uint64_t PermenantStorageSize;
-    void *PermenantStorage;
-    uint64_t TransientStorageSize;
-    void *TransientStorage;
+    bool initialized;
+    uint64_t permenantStorageSize;
+    void *permenantStorage;
+    uint64_t transientStorageSize;
+    void *transientStorage;
 };
 
 // NOTE: Service Provided By Game To Platform.
 struct ButtonState
 {
-    bool IsDown;
+    bool isDown;
 };
 struct GameInput
 {
-    ButtonState Up;
-    ButtonState Down;
+    ButtonState up;
+    ButtonState down;
 };
 
 internal void GameUpdateAndRender(GameMemory *memory, GameInput *input, uint32_t width, uint32_t height);
@@ -77,15 +77,15 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input, uint32_t
 // NOTE: Game Stuff.
 struct Matrix4X4
 {
-    real32 Data[16];
+    real32 data[16];
 };
 
 #pragma pack(push, 1)
 struct WaveHeader
 {
-    uint32_t RiffId;
-    uint32_t Size;
-    uint32_t WaveId;
+    uint32_t riffId;
+    uint32_t size;
+    uint32_t waveId;
 };
 #define RIFF_CODE(a, b, c, d) (((uint32_t)(a)<<0) | ((uint32_t)(b)<<8) | ((uint32_t)(c)<<16)| ((uint32_t)(d)<<24))
 enum
@@ -97,8 +97,8 @@ enum
 };
 struct WaveChunk
 {
-    uint32_t Id;
-    uint32_t Size;
+    uint32_t id;
+    uint32_t size;
 };
 struct WaveFmt
 {
@@ -111,7 +111,7 @@ struct WaveFmt
     uint16_t cbSize;
     uint16_t wValidBitsPerSample;
     uint32_t dwChannelMask;
-    uint8_t SubFormat[16];
+    uint8_t subFormat[16];
 };
 #pragma pack(pop)
 
@@ -119,23 +119,23 @@ internal SoundClip LoadWaveFile(char *filename);
 
 struct GameState
 {
-    real32 PlayerX[2];
-    real32 PlayerY[2];
-    real32 BallX;
-    real32 BallY;
-    real32 BallVelX;
-    real32 BallVelY;
+    real32 playerX[2];
+    real32 playerY[2];
+    real32 ballX;
+    real32 ballY;
+    real32 ballVelX;
+    real32 ballVelY;
 
     SoundClip hitAudio;
 };
 
 struct RenderState
 {
-    Matrix4X4 OrthoProj;
-    Shader BasicShader;
-    uint32_t VertexId;
-    uint32_t IndexId;
-    uint32_t Ibo;
-    uint32_t Vbo;
-    uint32_t Vao;
+    Matrix4X4 orthoProj;
+    Shader basicShader;
+    uint32_t vertexId;
+    uint32_t indexId;
+    uint32_t ibo;
+    uint32_t vbo;
+    uint32_t vao;
 };

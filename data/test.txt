@@ -78,7 +78,7 @@ internal void Flush(RenderState *renderer)
 {
     glBindVertexArray(renderer->Vao);
 
-    int32_t location = glGetUniformLocation(renderer->BasicShader.Program, "proj");
+    int32_t location = glGetUniformLocation(renderer->BasicShader.program, "proj");
     glUniformMatrix4fv(location, 1, GL_FALSE, renderer->OrthoProj.Data);
     glDrawElements(GL_TRIANGLES, renderer->IndexId, GL_UNSIGNED_INT, 0);
 
@@ -99,10 +99,10 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
         {
             //Do stuff with file memory.
             PlatformWriteWholeFile("test.txt", dbgFile.ContentSize, dbgFile.Content);
-            
+
             PlatformFreeFileMemory(dbgFile.Content);
         }
-    
+
         gameState->PlayerX[0] = 20.0f;
         gameState->PlayerY[0] = height * 0.5f - 50.0f;
         gameState->PlayerX[1] = width - gameState->PlayerX[0] - 20.0f;
@@ -188,7 +188,7 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(renderer->BasicShader.Program);
+    glUseprogram(renderer->BasicShader.program);
     for(size_t i=0; i<2; ++i)
     {
         DrawRectangle(renderer, gameState->PlayerX[i], gameState->PlayerY[i], 20.0f, 100.0f);

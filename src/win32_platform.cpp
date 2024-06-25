@@ -104,8 +104,8 @@ internal void PlayAudio(SoundClip clip)
     {
         XAUDIO2_BUFFER buffer = {};
         buffer.Flags = XAUDIO2_END_OF_STREAM;
-        buffer.AudioBytes = clip.Size;
-        buffer.pAudioData = (uint8_t *)clip.Memory;
+        buffer.AudioBytes = clip.size;
+        buffer.pAudioData = (uint8_t *)clip.memory;
         if(SUCCEEDED(AudioSource->SubmitSourceBuffer(&buffer)))
         {
             AudioSource->Start(0);
@@ -116,16 +116,16 @@ internal void PlayAudio(SoundClip clip)
 internal void CreateAndCompileShader(Shader *shader,
                                      const char *vertexShader, const char *fragShader)
 {
-    shader->Vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(shader->Vs, 1, &vertexShader, 0);
-    glCompileShader(shader->Vs);
-    shader->Fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(shader->Fs, 1, &fragShader, 0);
-    glCompileShader(shader->Fs);
-    shader->Program = glCreateProgram();
-    glAttachShader(shader->Program, shader->Vs);
-    glAttachShader(shader->Program, shader->Fs);
-    glLinkProgram(shader->Program);
+    shader->vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(shader->vs, 1, &vertexShader, 0);
+    glCompileShader(shader->vs);
+    shader->fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(shader->fs, 1, &fragShader, 0);
+    glCompileShader(shader->fs);
+    shader->program = glCreateProgram();
+    glAttachShader(shader->program, shader->vs);
+    glAttachShader(shader->program, shader->fs);
+    glLinkProgram(shader->program);
 }
 
 internal FileResult PlatformReadWholeFile(char* filename)
@@ -140,19 +140,19 @@ internal FileResult PlatformReadWholeFile(char* filename)
         if(GetFileSizeEx(file, &fileSize))
         {
             Assert(fileSize.QuadPart <= 0xFFFFFFFF);
-            result.ContentSize = (uint32_t)fileSize.QuadPart;
-            result.Content = VirtualAlloc(0, result.ContentSize, MEM_RESERVE|MEM_COMMIT,
+            result.contentSize = (uint32_t)fileSize.QuadPart;
+            result.content = VirtualAlloc(0, result.contentSize, MEM_RESERVE|MEM_COMMIT,
                                                         PAGE_READWRITE);
-            if(result.Content)
+            if(result.content)
             {
                 DWORD bytesToRead;
-                if(ReadFile(file, result.Content, result.ContentSize, &bytesToRead, 0)
-                    && bytesToRead == result.ContentSize)
+                if(ReadFile(file, result.content, result.contentSize, &bytesToRead, 0)
+                    && bytesToRead == result.contentSize)
                 {
                 }
                 else
                 {
-                    PlatformFreeFileMemory(result.Content);
+                    PlatformFreeFileMemory(result.content);
                 }
             }
             else
@@ -276,13 +276,13 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
 
             GameInput input = {0};
             GameMemory gameMemory = {0};
-            gameMemory.PermenantStorageSize = Megabytes(2);
-            gameMemory.TransientStorageSize = Megabytes(64);
-            uint64_t totalSize = gameMemory.PermenantStorageSize + gameMemory.TransientStorageSize;
-            gameMemory.PermenantStorage = VirtualAlloc(0, totalSize, MEM_RESERVE|MEM_COMMIT,
+            gameMemory.permenantStorageSize = Megabytes(2);
+            gameMemory.transientStorageSize = Megabytes(64);
+            uint64_t totalSize = gameMemory.permenantStorageSize + gameMemory.transientStorageSize;
+            gameMemory.permenantStorage = VirtualAlloc(0, totalSize, MEM_RESERVE|MEM_COMMIT,
                                                     PAGE_READWRITE);
-            gameMemory.TransientStorage = (uint8_t *)gameMemory.PermenantStorage
-                                        + gameMemory.PermenantStorageSize;
+            gameMemory.transientStorage = (uint8_t *)gameMemory.permenantStorage
+                                        + gameMemory.permenantStorageSize;
 
             if (Win32InitOpengl(deviceContext))
             {
@@ -317,11 +317,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance,
                             {
                                 if(vkCode == 'W')
                                 {
-                                    input.Up.IsDown = isDown;
+                                    input.up.isDown = isDown;
                                 }
                                 else if(vkCode == 'S')
                                 {
-                                    input.Down.IsDown = isDown;
+                                    input.down.isDown = isDown;
                                 }
                             }
                         } break;

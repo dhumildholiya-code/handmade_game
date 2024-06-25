@@ -30,13 +30,13 @@ internal void CreateOrthoProj(Matrix4X4 *mat, real32 l, real32 r, real32 t, real
     real32 irl = 1.0f / rl;
     real32 itb = 1.0f / tb;
     real32 ifn = 1.0f / fn;
-    mat->Data[0] = 2.0f * irl;
-    mat->Data[5] = 2.0f * itb;
-    mat->Data[10] = -2.0f * ifn;
-    mat->Data[12] = (r + l) * -irl;
-    mat->Data[13] = (t + b) * -itb;
-    mat->Data[14] = (f + n) * -ifn;
-    mat->Data[15] = 1.0f;
+    mat->data[0] = 2.0f * irl;
+    mat->data[5] = 2.0f * itb;
+    mat->data[10] = -2.0f * ifn;
+    mat->data[12] = (r + l) * -irl;
+    mat->data[13] = (t + b) * -itb;
+    mat->data[14] = (f + n) * -ifn;
+    mat->data[15] = 1.0f;
 }
 
 internal SoundClip LoadWaveFile(char *filename)
@@ -44,28 +44,28 @@ internal SoundClip LoadWaveFile(char *filename)
     SoundClip result = {};
 
     FileResult fileResult = PlatformReadWholeFile(filename);
-    if(fileResult.ContentSize != 0)
+    if(fileResult.contentSize != 0)
     {
-        uint8_t *at = (uint8_t *)fileResult.Content;
+        uint8_t *at = (uint8_t *)fileResult.content;
         WaveHeader *header = (WaveHeader *)at;
-        Assert(header->RiffId == WAVE_RIFF);
-        Assert(header->WaveId == WAVE_WAVE);
+        Assert(header->riffId == WAVE_RIFF);
+        Assert(header->waveId == WAVE_WAVE);
         at += sizeof(WaveHeader);
         WaveChunk *chunk = (WaveChunk *)at;
-        if(chunk->Id == WAVE_FMT)
+        if(chunk->id == WAVE_FMT)
         {
             at += sizeof(WaveChunk);
             WaveFmt *fmt = (WaveFmt *)at;
-            result.SampleCount = fmt->nSamplesPerSec;
-            at += chunk->Size;
+            result.sampleCount = fmt->nSamplesPerSec;
+            at += chunk->size;
         }
         chunk = (WaveChunk *)at;
-        if(chunk->Id == WAVE_DATA)
+        if(chunk->id == WAVE_DATA)
         {
             at += sizeof(WaveChunk);
-            result.Size = chunk->Size;
-            result.Memory = (void *)at;
-            at += chunk->Size;
+            result.size = chunk->size;
+            result.memory = (void *)at;
+            at += chunk->size;
         }
     }
 
@@ -88,68 +88,68 @@ internal void DrawRectangle(RenderState *renderer, real32 x, real32 y, real32 w,
     };
     for(size_t i=0; i<6; ++i)
     {
-        indices[i] += renderer->VertexId;
+        indices[i] += renderer->vertexId;
     }
 
-    uint32_t vertOffsetBytes = renderer->VertexId*3*sizeof(real32);
-    uint32_t indexOffsetBytes = renderer->IndexId*sizeof(uint32_t);
+    uint32_t vertOffsetBytes = renderer->vertexId*3*sizeof(real32);
+    uint32_t indexOffsetBytes = renderer->indexId*sizeof(uint32_t);
 
-    glBindVertexArray(renderer->Vao);
-    glBindBuffer(GL_ARRAY_BUFFER, renderer->Vbo);
+    glBindVertexArray(renderer->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
     glBufferSubData(GL_ARRAY_BUFFER, vertOffsetBytes, vertexCount*3*sizeof(real32), vertices);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->Ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->ibo);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffsetBytes, indexCount*sizeof(uint32_t), indices);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    renderer->VertexId += vertexCount;
-    renderer->IndexId += indexCount;
+    renderer->vertexId += vertexCount;
+    renderer->indexId += indexCount;
 }
 
 internal void Flush(RenderState *renderer)
 {
-    glBindVertexArray(renderer->Vao);
+    glBindVertexArray(renderer->vao);
 
-    int32_t location = glGetUniformLocation(renderer->BasicShader.Program, "proj");
-    glUniformMatrix4fv(location, 1, GL_FALSE, renderer->OrthoProj.Data);
-    glDrawElements(GL_TRIANGLES, renderer->IndexId, GL_UNSIGNED_INT, 0);
+    int32_t location = glGetUniformLocation(renderer->basicShader.program, "proj");
+    glUniformMatrix4fv(location, 1, GL_FALSE, renderer->orthoProj.data);
+    glDrawElements(GL_TRIANGLES, renderer->indexId, GL_UNSIGNED_INT, 0);
 
-    renderer->VertexId = 0;
-    renderer->IndexId = 0;
+    renderer->vertexId = 0;
+    renderer->indexId = 0;
 }
 
 internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
                                 uint32_t width, uint32_t height)
 {
-    GameState *gameState = (GameState *)memory->PermenantStorage;
+    GameState *gameState = (GameState *)memory->permenantStorage;
     RenderState *renderer = (RenderState *)((uint8_t *)gameState + sizeof(GameState));
-    if(!memory->Initialized)
+    if(!memory->initialized)
     {
         gameState->hitAudio = LoadWaveFile("hit.wav");
         PlayAudio(gameState->hitAudio);
 
-        gameState->PlayerX[0] = 20.0f;
-        gameState->PlayerY[0] = height * 0.5f - 50.0f;
-        gameState->PlayerX[1] = width - gameState->PlayerX[0] - 20.0f;
-        gameState->PlayerY[1] = height - gameState->PlayerY[0] - 100.0f;
-        gameState->BallX = width * 0.5f - 7.0f;
-        gameState->BallY = height * 0.5f - 7.0f;
-        gameState->BallVelX = 2.5f;
-        gameState->BallVelY = 2.5f;
+        gameState->playerX[0] = 20.0f;
+        gameState->playerY[0] = height * 0.5f - 50.0f;
+        gameState->playerX[1] = width - gameState->playerX[0] - 20.0f;
+        gameState->playerY[1] = height - gameState->playerY[0] - 100.0f;
+        gameState->ballX = width * 0.5f - 7.0f;
+        gameState->ballY = height * 0.5f - 7.0f;
+        gameState->ballVelX = 2.5f;
+        gameState->ballVelY = 2.5f;
 
-        renderer->VertexId = 0;
-        renderer->IndexId = 0;
-        CreateOrthoProj(&renderer->OrthoProj, 0.0f, 800.0f, 0.0f, 600.0f,
+        renderer->vertexId = 0;
+        renderer->indexId = 0;
+        CreateOrthoProj(&renderer->orthoProj, 0.0f, 800.0f, 0.0f, 600.0f,
                         0.0f, 10.0f);
-        CreateAndCompileShader(&renderer->BasicShader, vertex_shader, fragment_shader);
-        glGenBuffers(1, &renderer->Vbo);
-        glGenBuffers(1, &renderer->Ibo);
-        glGenVertexArrays(1, &renderer->Vao);
-        glBindVertexArray(renderer->Vao);
-        glBindBuffer(GL_ARRAY_BUFFER, renderer->Vbo);
+        CreateAndCompileShader(&renderer->basicShader, vertex_shader, fragment_shader);
+        glGenBuffers(1, &renderer->vbo);
+        glGenBuffers(1, &renderer->ibo);
+        glGenVertexArrays(1, &renderer->vao);
+        glBindVertexArray(renderer->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
         glBufferData(GL_ARRAY_BUFFER, 24*3* sizeof(real32), 0, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->Ibo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->ibo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12*3*sizeof(uint32_t), 0, GL_DYNAMIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -157,45 +157,45 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        memory->Initialized = true;
+        memory->initialized = true;
     }
 
-    if(input->Up.IsDown)
+    if(input->up.isDown)
     {
-        gameState->PlayerY[0] -= 5.0f;
-        gameState->PlayerY[1] += 5.0f;
+        gameState->playerY[0] -= 5.0f;
+        gameState->playerY[1] += 5.0f;
     }
-    if(input->Down.IsDown)
+    if(input->down.isDown)
     {
-        gameState->PlayerY[0] += 5.0f;
-        gameState->PlayerY[1] -= 5.0f;
+        gameState->playerY[0] += 5.0f;
+        gameState->playerY[1] -= 5.0f;
     }
-    gameState->BallX += gameState->BallVelX;
-    gameState->BallY += gameState->BallVelY;
-    if(gameState->BallX < 0)
+    gameState->ballX += gameState->ballVelX;
+    gameState->ballY += gameState->ballVelY;
+    if(gameState->ballX < 0)
     {
-        gameState->BallX = 0.0f;
-        gameState->BallVelX *= -1.0f;
+        gameState->ballX = 0.0f;
+        gameState->ballVelX *= -1.0f;
     }
-    if(gameState->BallY < 0)
+    if(gameState->ballY < 0)
     {
-        gameState->BallY = 0.0f;
-        gameState->BallVelY *= -1.0f;
+        gameState->ballY = 0.0f;
+        gameState->ballVelY *= -1.0f;
     }
-    if(gameState->BallX + 14.0f > width)
+    if(gameState->ballX + 14.0f > width)
     {
-        gameState->BallX = width - 14.0f;
-        gameState->BallVelX *= -1.0f;
+        gameState->ballX = width - 14.0f;
+        gameState->ballVelX *= -1.0f;
     }
-    if(gameState->BallY + 14.0f > height)
+    if(gameState->ballY + 14.0f > height)
     {
-        gameState->BallY = height - 14.0f;
-        gameState->BallVelY *= -1.0f;
+        gameState->ballY = height - 14.0f;
+        gameState->ballVelY *= -1.0f;
     }
     for(size_t i=0; i<2; ++i)
     {
-        real32 dx = (gameState->BallX + 7.0f) - (gameState->PlayerX[i] + 10.0f);
-        real32 dy = (gameState->BallY + 7.0f) - (gameState->PlayerY[i] + 50.0f);
+        real32 dx = (gameState->ballX + 7.0f) - (gameState->playerX[i] + 10.0f);
+        real32 dy = (gameState->ballY + 7.0f) - (gameState->playerY[i] + 50.0f);
         real32 ox = 17.0f - fabsf(dx);
         real32 oy = 57.0f - fabsf(dy);
         if(ox > 0.0f && oy > 0.0f)
@@ -203,23 +203,23 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
             PlayAudio(gameState->hitAudio);
             if(ox < oy)
             {
-                gameState->BallX += Sign(dx) * ox;
-                gameState->BallVelX *= -1.0f;
+                gameState->ballX += Sign(dx) * ox;
+                gameState->ballVelX *= -1.0f;
             }
             else
             {
-                gameState->BallY += Sign(dy) * oy;
-                gameState->BallVelY *= -1.0f;
+                gameState->ballY += Sign(dy) * oy;
+                gameState->ballVelY *= -1.0f;
             }
         }
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(renderer->BasicShader.Program);
+    glUseProgram(renderer->basicShader.program);
     for(size_t i=0; i<2; ++i)
     {
-        DrawRectangle(renderer, gameState->PlayerX[i], gameState->PlayerY[i], 20.0f, 100.0f);
+        DrawRectangle(renderer, gameState->playerX[i], gameState->playerY[i], 20.0f, 100.0f);
     }
-    DrawRectangle(renderer, gameState->BallX, gameState->BallY, 14.0f, 14.0f);
+    DrawRectangle(renderer, gameState->ballX, gameState->ballY, 14.0f, 14.0f);
     Flush(renderer);
 }
