@@ -56,10 +56,17 @@ internal SoundClip LoadWaveFile(char *filename)
         {
             at += sizeof(WaveChunk);
             WaveFmt *fmt = (WaveFmt *)at;
+            result.SampleCount = fmt->nSamplesPerSec;
             at += chunk->Size;
         }
         chunk = (WaveChunk *)at;
-        int a = 0;
+        if(chunk->Id == WAVE_DATA)
+        {
+            at += sizeof(WaveChunk);
+            result.Size = chunk->Size;
+            result.Memory = (void *)at;
+            at += chunk->Size;
+        }
     }
 
    return result;
@@ -119,7 +126,8 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
     RenderState *renderer = (RenderState *)((uint8_t *)gameState + sizeof(GameState));
     if(!memory->Initialized)
     {
-        SoundClip clip = LoadWaveFile("test.wav");
+        gameState->hitAudio = LoadWaveFile("hit.wav");
+        PlayAudio(gameState->hitAudio);
 
         gameState->PlayerX[0] = 20.0f;
         gameState->PlayerY[0] = height * 0.5f - 50.0f;
@@ -192,6 +200,7 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
         real32 oy = 57.0f - fabsf(dy);
         if(ox > 0.0f && oy > 0.0f)
         {
+            PlayAudio(gameState->hitAudio);
             if(ox < oy)
             {
                 gameState->BallX += Sign(dx) * ox;

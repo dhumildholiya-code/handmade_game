@@ -30,6 +30,15 @@ struct Shader
 };
 internal void CreateAndCompileShader(Shader *shader, const char* vertexShader,
                                     const char* fragShader);
+
+struct SoundClip
+{
+    uint32_t SampleCount;
+    uint32_t Size;
+    void *Memory;
+};
+internal void PlayAudio(SoundClip clip);
+
 struct FileResult
 {
     uint32_t ContentSize;
@@ -62,6 +71,7 @@ struct GameInput
     ButtonState Up;
     ButtonState Down;
 };
+
 internal void GameUpdateAndRender(GameMemory *memory, GameInput *input, uint32_t width, uint32_t height);
 
 // NOTE: Game Stuff.
@@ -105,11 +115,6 @@ struct WaveFmt
 };
 #pragma pack(pop)
 
-struct SoundClip
-{
-    uint32_t SampleCount;
-    void *Memory;
-};
 internal SoundClip LoadWaveFile(char *filename);
 
 struct GameState
@@ -120,6 +125,8 @@ struct GameState
     real32 BallY;
     real32 BallVelX;
     real32 BallVelY;
+
+    SoundClip hitAudio;
 };
 
 struct RenderState

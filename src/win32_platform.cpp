@@ -13,9 +13,11 @@
 #include <xaudio2.h>
 
 global_var bool Running;
+global_var bool IsAudioInit;
+global_var int64_t PerfFreq;
 global_var HGLRC GlContext;
 global_var IXAudio2 *XAudio2;
-global_var int64_t PerfFreq;
+global_var IXAudio2SourceVoice *AudioSource;
 
 internal bool Win32InitOpengl(HDC deviceContext)
 {
@@ -67,12 +69,46 @@ internal void Win32InitXAudio2()
             IXAudio2MasteringVoice* pMasterVoice = nullptr;
             if (SUCCEEDED(XAudio2->CreateMasteringVoice(&pMasterVoice)))
             {
-                int a = 5;
+                WAVEFORMATEX waveFmt = {};
+                waveFmt.wFormatTag = WAVE_FORMAT_PCM;
+                waveFmt.nChannels = 1;
+                waveFmt.nSamplesPerSec = 44100;
+                waveFmt.wBitsPerSample = 16;
+                waveFmt.nBlockAlign = (waveFmt.nChannels * waveFmt.wBitsPerSample) / 8;
+                waveFmt.nAvgBytesPerSec = waveFmt.nSamplesPerSec * waveFmt.nBlockAlign;
+
+                if(SUCCEEDED(XAudio2->CreateSourceVoice(&AudioSource, &waveFmt)))
+                {
+                    IsAudioInit = true;
+                }
+                else
+                {
+                    //TODO: Failed to Create Source Voice.
+                }
+            }
+            else
+            {
+                //TODO: Failed to Create Master Voice.
             }
         }
         else
         {
             //TODO: Failed to Create XAudio2.
+        }
+    }
+}
+
+internal void PlayAudio(SoundClip clip)
+{
+    if(IsAudioInit)
+    {
+        XAUDIO2_BUFFER buffer = {};
+        buffer.Flags = XAUDIO2_END_OF_STREAM;
+        buffer.AudioBytes = clip.Size;
+        buffer.pAudioData = (uint8_t *)clip.Memory;
+        if(SUCCEEDED(AudioSource->SubmitSourceBuffer(&buffer)))
+        {
+            AudioSource->Start(0);
         }
     }
 }
