@@ -22,15 +22,6 @@ typedef float real32;
 typedef double real64;
 
 // NOTE: Service Provided By Platfrom to Game.
-struct Shader
-{
-    uint32_t vs;
-    uint32_t fs;
-    uint32_t program;
-};
-internal void CreateAndCompileShader(Shader *shader, const char* vertexShader,
-                                    const char* fragShader);
-
 struct SoundClip
 {
     uint32_t sampleCount;
@@ -127,15 +118,4 @@ struct GameState
     real32 ballVelY;
 
     SoundClip hitAudio;
-};
-
-struct RenderState
-{
-    Matrix4X4 orthoProj;
-    Shader basicShader;
-    uint32_t vertexId;
-    uint32_t indexId;
-    uint32_t ibo;
-    uint32_t vbo;
-    uint32_t vao;
 };

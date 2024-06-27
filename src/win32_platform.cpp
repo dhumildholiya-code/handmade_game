@@ -1,5 +1,3 @@
-#define GLEW_STATIC
-#include "GL/glew.h"
 #include "game.cpp"
 
 /* TODO:
@@ -111,21 +109,6 @@ internal void PlayAudio(SoundClip clip)
             AudioSource->Start(0);
         }
     }
-}
-
-internal void CreateAndCompileShader(Shader *shader,
-                                     const char *vertexShader, const char *fragShader)
-{
-    shader->vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(shader->vs, 1, &vertexShader, 0);
-    glCompileShader(shader->vs);
-    shader->fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(shader->fs, 1, &fragShader, 0);
-    glCompileShader(shader->fs);
-    shader->program = glCreateProgram();
-    glAttachShader(shader->program, shader->vs);
-    glAttachShader(shader->program, shader->fs);
-    glLinkProgram(shader->program);
 }
 
 internal FileResult PlatformReadWholeFile(char* filename)
