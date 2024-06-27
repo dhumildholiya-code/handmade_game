@@ -136,6 +136,33 @@ struct Vertex
     Vec2 uv;
 };
 
+struct Shader
+{
+    uint32_t vs;
+    uint32_t fs;
+    uint32_t program;
+};
+
+struct Texture
+{
+    uint32_t id;
+    int32_t width;
+    int32_t height;
+    int32_t bpp;
+};
+
+struct RenderState
+{
+    Matrix4X4 orthoProj;
+    Shader basicShader;
+    uint32_t vertexId;
+    uint32_t indexId;
+    uint32_t ibo;
+    uint32_t vbo;
+    uint32_t vao;
+    Texture wood;
+};
+
 struct GameState
 {
     real32 playerX[2];

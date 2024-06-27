@@ -1,4 +1,6 @@
 #include "game.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "gl_renderer.cpp"
 
 inline internal real32 Sign(real32 x)
@@ -126,6 +128,7 @@ internal void GameUpdateAndRender(GameMemory *memory, GameInput *input,
     {
         DrawRectangle(renderer, gameState->playerX[i]-10.0f, gameState->playerY[i]-50.0f, 20.0f, 100.0f);
     }
+    DrawRectangle(renderer, 300.0f, 300.0f, 200.0f, 200.0f);
     DrawRectangle(renderer, gameState->ballX-7.0f, gameState->ballY-7.0f, 14.0f, 14.0f);
     Flush(renderer);
 }
