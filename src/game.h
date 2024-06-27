@@ -65,12 +65,7 @@ struct GameInput
 
 internal void GameUpdateAndRender(GameMemory *memory, GameInput *input, uint32_t width, uint32_t height);
 
-// NOTE: Game Stuff.
-struct Matrix4X4
-{
-    real32 data[16];
-};
-
+//Game asset loading stuff
 #pragma pack(push, 1)
 struct WaveHeader
 {
@@ -108,6 +103,39 @@ struct WaveFmt
 
 internal SoundClip LoadWaveFile(char *filename);
 
+//Game stuff
+struct Vec2
+{
+    real32 x;
+    real32 y;
+};
+
+struct Vec3
+{
+    real32 x;
+    real32 y;
+    real32 z;
+};
+
+struct Vec4
+{
+    real32 x;
+    real32 y;
+    real32 z;
+    real32 w;
+};
+
+struct Matrix4X4
+{
+    real32 data[16];
+};
+
+struct Vertex
+{
+    Vec3 position;
+    Vec2 uv;
+};
+
 struct GameState
 {
     real32 playerX[2];
@@ -119,3 +147,4 @@ struct GameState
 
     SoundClip hitAudio;
 };
+
