@@ -73,7 +73,7 @@ struct WaveHeader
     uint32_t size;
     uint32_t waveId;
 };
-#define RIFF_CODE(a, b, c, d) (((uint32_t)(a)<<0) | ((uint32_t)(b)<<8) | ((uint32_t)(c)<<16)| ((uint32_t)(d)<<24))
+#define RIFF_CODE(a, b, c, d) (((uint32_t)(a)<<0) | ((uint32_t)(b)<<8) | ((uint32_t)(c)<<16) | ((uint32_t)(d)<<24))
 enum
 {
     WAVE_RIFF = RIFF_CODE('R', 'I', 'F', 'F'),
